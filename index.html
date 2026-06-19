@@ -25,8 +25,9 @@
     padding: 11px 13px; font-size: 14px; font-family: inherit; color: #1c2733; background: #fbfcfe; resize: vertical; }
   input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: #2e6da4; box-shadow: 0 0 0 3px rgba(46,109,164,.12); }
   textarea { min-height: 150px; }
-  .cfa-hint { display:none; margin-top:8px; background:#fff8e6; border:1px solid #f0e0a8; border-radius:9px;
-    padding:9px 12px; font-size:12.5px; color:#6b5a1f; }
+  .cfa-hint { display:none; margin-top:8px; border-radius:9px; padding:9px 12px; font-size:12.5px; }
+  .cfa-hint.warn { background:#fff8e6; border:1px solid #f0e0a8; color:#6b5a1f; }
+  .cfa-hint.good { background:#ecf7f0; border:1px solid #bfe3cf; color:#1f6b44; }
   .btn { margin-top: 18px; background: #16385f; color: #fff; border: none; border-radius: 9px;
     padding: 12px 22px; font-size: 14.5px; font-weight: 600; cursor: pointer; transition: background .15s; }
   .btn:hover { background: #1d4878; }
@@ -101,7 +102,7 @@
       <option value="certs">Certifications only — lower profile (good if "overqualified" is a risk, e.g. some PE roles)</option>
       <option value="off">Leave CFA off this resume entirely</option>
     </select>
-    <div class="cfa-hint" id="peHint">This looks like a private-equity / buy-side role. The CFA can occasionally read as "overqualified" here — you may want <b>Certifications only</b> for this one. Your call.</div>
+    <div class="cfa-hint" id="peHint"></div>
 
     <button class="btn" id="goBtn">Tailor my resume &rarr;</button>
     <p class="hint">Jake's real resume is locked in as the source of truth. The tool can only reword his bullets to mirror the posting — it never adds experience he doesn't have.</p>
@@ -317,10 +318,13 @@ async function tailor() {
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
-function resumeAsHtmlDoc() {
+function resumeAsHtmlDoc(forPrint) {
   const inner = buildResumeHtml(false, []);
+  const pageCss = forPrint
+    ? '@page{size:letter;margin:0;} body{margin:0;padding:0.3in 0.4in 0.4in;'
+    : '@page{margin:0.3in 0.4in 0.4in 0.4in;} body{';
   return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">'
-    + '<style>@page{margin:0.3in 0.4in 0.4in 0.4in;} body{font-family:"Times New Roman",Times,serif;color:#000;font-size:10.5pt;line-height:1.18;}'
+    + '<style>' + pageCss + 'font-family:"Times New Roman",Times,serif;color:#000;font-size:10.5pt;line-height:1.18;}'
     + '.rname{text-align:center;font-weight:700;font-size:16pt;margin:0;}'
     + '.rcontact{text-align:center;font-size:10.5pt;padding-bottom:3px;border-bottom:3px double #000;margin:0 0 6px;}'
     + '.rsec{font-weight:700;font-size:10.5pt;border-bottom:1px solid #000;margin:8px 0 3px;}'
@@ -339,7 +343,7 @@ document.getElementById('dlWord').addEventListener('click', () =>
   download('Jake_Sobieski_Resume_Tailored.doc', resumeAsHtmlDoc(), 'application/msword'));
 document.getElementById('dlPdf').addEventListener('click', () => {
   const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print/save as PDF.'); return; }
-  w.document.write(resumeAsHtmlDoc()); w.document.close(); setTimeout(()=>{ w.focus(); w.print(); }, 400);
+  w.document.write(resumeAsHtmlDoc(true)); w.document.close(); setTimeout(()=>{ w.focus(); w.print(); }, 400);
 });
 document.getElementById('restart').addEventListener('click', () => {
   document.getElementById('results').style.display = 'none';
@@ -348,12 +352,22 @@ document.getElementById('restart').addEventListener('click', () => {
   window.scrollTo({top:0, behavior:'smooth'});
 });
 
-// Smart hint: nudge toward "Certifications only" when the posting looks like PE / buy-side
-document.getElementById('jobText').addEventListener('input', function(){
-  const t = this.value.toLowerCase();
-  const pe = /private equity|buyout|buy-side|buy side|portfolio company|leveraged buyout|\bpe\b|\blbo\b fund/.test(t);
-  document.getElementById('peHint').style.display = pe ? 'block' : 'none';
-});
+// Smart CFA recommendation based on what the posting actually says
+function recommendCfa(raw){
+  const t = (raw||'').toLowerCase();
+  const mentionsCFA = /\bcfa\b|chartered financial analyst/.test(t);
+  const looksPE = /private equity associate|buyout|leveraged buyout|portfolio compan|buy-side associate|megafund|mega-fund/.test(t);
+  if (mentionsCFA) return {tone:'good', html:'<b>Recommended: keep the CFA in the header.</b> This posting lists the CFA as preferred or required, so &ldquo;Header + Certifications&rdquo; gives the strongest signal to both the ATS scan and the reviewer.'};
+  if (looksPE) return {tone:'warn', html:'This reads like a buy-side / PE associate role that doesn&rsquo;t mention the CFA. You may prefer <b>&ldquo;Certifications only&rdquo;</b> so the charter doesn&rsquo;t come across as overqualified &mdash; your call.'};
+  return null;
+}
+function updateCfaRec(){
+  const rec = recommendCfa(document.getElementById('jobText').value);
+  const el = document.getElementById('peHint');
+  if (!rec){ el.style.display='none'; return; }
+  el.className = 'cfa-hint ' + rec.tone; el.innerHTML = rec.html; el.style.display = 'block';
+}
+document.getElementById('jobText').addEventListener('input', updateCfaRec);
 // Re-render live if the CFA choice changes after a resume is already showing
 document.getElementById('cfaMode').addEventListener('change', function(){
   if (document.getElementById('results').style.display === 'block') renderResume(lastKw);
