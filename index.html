@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Jake's Resume Tailor</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f4f6f9; color: #1c2733; line-height: 1.5; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 22px 60px; }
+  header.app { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .logo { width: 42px; height: 42px; border-radius: 10px; flex: none;
+    background: linear-gradient(135deg, #16385f, #2e6da4); display: flex; align-items: center;
+    justify-content: center; color: #fff; font-weight: 700; font-size: 19px; letter-spacing: .5px; }
+  header.app h1 { font-size: 22px; margin: 0; font-weight: 700; }
+  header.app p { margin: 2px 0 0; color: #5b6b7b; font-size: 13.5px; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px;
+    box-shadow: 0 1px 3px rgba(16,40,70,.05); margin-top: 18px; }
+  .card h2 { font-size: 15px; margin: 0 0 4px; font-weight: 700; }
+  .card .sub { color: #6b7a89; font-size: 13px; margin: 0 0 16px; }
+  label { display:block; font-size: 12.5px; font-weight:600; color:#3a4a5a; margin: 14px 0 6px; }
+  input[type=text], textarea, select { width: 100%; border: 1px solid #cfd9e4; border-radius: 9px;
+    padding: 11px 13px; font-size: 14px; font-family: inherit; color: #1c2733; background: #fbfcfe; resize: vertical; }
+  input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: #2e6da4; box-shadow: 0 0 0 3px rgba(46,109,164,.12); }
+  textarea { min-height: 150px; }
+  .cfa-hint { display:none; margin-top:8px; background:#fff8e6; border:1px solid #f0e0a8; border-radius:9px;
+    padding:9px 12px; font-size:12.5px; color:#6b5a1f; }
+  .btn { margin-top: 18px; background: #16385f; color: #fff; border: none; border-radius: 9px;
+    padding: 12px 22px; font-size: 14.5px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .btn:hover { background: #1d4878; }
+  .btn:disabled { background: #9fb0c2; cursor: not-allowed; }
+  .btn.secondary { background: #fff; color: #16385f; border: 1px solid #16385f; }
+  .btn.secondary:hover { background: #eef3f9; }
+  .hint { font-size: 12px; color: #8392a2; margin-top: 8px; }
+  #progress { display: none; }
+  .bar-track { height: 8px; background: #e6ecf3; border-radius: 99px; overflow: hidden; margin: 8px 0 20px; }
+  .bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #2e6da4, #4f9bd9); border-radius: 99px; transition: width .5s ease; }
+  .stages { list-style: none; padding: 0; margin: 0; }
+  .stages li { display: flex; align-items: center; gap: 12px; padding: 9px 0; font-size: 14px; color: #9aa8b6; transition: color .3s; }
+  .stages li .dot { width: 22px; height: 22px; border-radius: 50%; flex: none; border: 2px solid #d4dde6;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; color: transparent; transition: all .3s; }
+  .stages li.active { color: #16385f; font-weight: 600; }
+  .stages li.active .dot { border-color: #2e6da4; }
+  .stages li.active .dot::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: #2e6da4; animation: pulse 1s infinite; }
+  .stages li.done { color: #2f6b48; }
+  .stages li.done .dot { border-color: #2f9e63; background: #2f9e63; color: #fff; }
+  .stages li.done .dot::after { content: "✓"; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.6); opacity: .5; } }
+  #results { display: none; }
+  .results-grid { display: grid; grid-template-columns: 1fr 310px; gap: 18px; align-items: start; }
+  @media (max-width: 860px) { .results-grid { grid-template-columns: 1fr; } }
+  .page-scroll { background:#e9eef3; border:1px solid #e2e8f0; border-radius:10px; padding:18px; overflow:auto; }
+  .resume { font-family: "Times New Roman", Times, serif; color:#000; background:#fff; width: 7.7in; max-width: 100%;
+    margin: 0 auto; padding: 0.30in 0.40in 0.4in; box-shadow: 0 2px 10px rgba(0,0,0,.12); font-size: 10.5pt; line-height: 1.18; }
+  .resume .rname { text-align:center; font-weight:700; font-size:16pt; margin:0; }
+  .resume .rcontact { text-align:center; font-size:10.5pt; padding-bottom:3px; border-bottom:3px double #000; margin:0 0 6px; }
+  .resume .rsec { font-weight:700; font-size:10.5pt; border-bottom:1px solid #000; margin:8px 0 3px; }
+  .resume .row { display:flex; justify-content:space-between; gap:12px; }
+  .resume .co { font-weight:700; } .resume .loc { font-weight:700; white-space:nowrap; }
+  .resume .ttl { font-style:italic; } .resume .dates { font-style:italic; white-space:nowrap; }
+  .resume ul { margin: 2px 0 4px; padding-left: 20px; }
+  .resume li { font-size:10.5pt; margin-bottom:2px; text-align:justify; }
+  .resume .stxlabel { text-decoration:underline; margin: 3px 0 1px; }
+  .resume .deal { font-weight:700; font-style:italic; margin:2px 0 1px; }
+  .resume .addline { margin:2px 0; } .resume .addline b { font-weight:700; }
+  mark { background: #fff3bf; padding: 0 1px; border-radius: 2px; }
+  .fitbox { background: linear-gradient(160deg, #ecf7f0, #e3f1ff); border: 1px solid #bfe3cf; border-radius: 12px; padding: 20px; position: sticky; top: 16px; }
+  .fitbox h3 { margin: 0 0 4px; font-size: 15px; color: #1f6b44; display:flex; align-items:center; gap:8px; }
+  .fitbox .lead { font-size: 12.5px; color: #2f5a44; margin: 0 0 12px; }
+  .fitbox ul { margin: 0; padding-left: 18px; }
+  .fitbox li { font-size: 13px; margin-bottom: 9px; color: #1c3a2a; }
+  .fitbox li b { color: #14502f; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+  .err { background:#fdecec; border:1px solid #f3c0c0; color:#8a2b2b; border-radius:9px; padding:12px 14px; font-size:13px; margin-top:14px; }
+  .prototype-flag { font-size:11.5px; color:#8392a2; margin-top:18px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div class="logo">JS</div>
+    <div>
+      <h1>Jake's Resume Tailor</h1>
+      <p>Paste a job posting &rarr; get his resume reworded to match it. Same template, same facts &mdash; only wording changes.</p>
+    </div>
+  </header>
+
+  <div class="card" id="inputCard">
+    <h2>Target role</h2>
+    <p class="sub">Paste the full job description (most reliable). The link is optional and just stored for reference.</p>
+    <label for="jobUrl">Job posting link (optional)</label>
+    <input type="text" id="jobUrl" placeholder="https://company.com/careers/investment-analyst" />
+    <label for="jobText">Job description <span style="color:#c0392b">*</span></label>
+    <textarea id="jobText" placeholder="Paste the full job description here — responsibilities, requirements, preferred qualifications, everything."></textarea>
+
+    <label for="cfaMode">CFA credential placement</label>
+    <select id="cfaMode">
+      <option value="header">Header + Certifications — most prominent (default)</option>
+      <option value="certs">Certifications only — lower profile (good if "overqualified" is a risk, e.g. some PE roles)</option>
+      <option value="off">Leave CFA off this resume entirely</option>
+    </select>
+    <div class="cfa-hint" id="peHint">This looks like a private-equity / buy-side role. The CFA can occasionally read as "overqualified" here — you may want <b>Certifications only</b> for this one. Your call.</div>
+
+    <button class="btn" id="goBtn">Tailor my resume &rarr;</button>
+    <p class="hint">Jake's real resume is locked in as the source of truth. The tool can only reword his bullets to mirror the posting — it never adds experience he doesn't have.</p>
+  </div>
+
+  <div class="card" id="progress">
+    <h2>Working on it…</h2>
+    <p class="sub">Analyzing the posting and tailoring Jake's resume.</p>
+    <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    <ul class="stages" id="stages">
+      <li data-i="0"><span class="dot"></span>Reading the job posting</li>
+      <li data-i="1"><span class="dot"></span>Extracting required skills &amp; keywords</li>
+      <li data-i="2"><span class="dot"></span>Researching similar roles at the company</li>
+      <li data-i="3"><span class="dot"></span>Matching against Jake's real experience</li>
+      <li data-i="4"><span class="dot"></span>Reweaving keywords into his bullets</li>
+      <li data-i="5"><span class="dot"></span>Finalizing your resume</li>
+    </ul>
+  </div>
+
+  <div id="results">
+    <div class="card">
+      <h2>Tailored resume</h2>
+      <p class="sub">Reworded to mirror the posting — every line traces back to his real resume. Same template, facts, numbers, and dates.</p>
+      <div class="toolbar">
+        <button class="btn" id="dlWord">Download Word (.doc)</button>
+        <button class="btn secondary" id="dlPdf">Save as PDF / Print</button>
+        <button class="btn secondary" id="restart">Tailor another &rarr;</button>
+      </div>
+      <p class="hint" style="margin-top:12px;display:flex;align-items:center;gap:7px;">
+        <mark style="padding:0 4px;">Highlighted</mark>
+        <span>words show keywords pulled from the posting — preview-only for Jake's reference. The downloaded Word and PDF files have <b>no highlighting</b>.</span>
+      </p>
+      <div class="results-grid" style="margin-top:14px;">
+        <div class="page-scroll"><div class="resume" id="resumeRender"></div></div>
+        <div class="fitbox" id="fitbox">
+          <h3>✅ Good news</h3>
+          <p class="lead">Skills you already have that make you a strong fit for this role:</p>
+          <ul id="fitList"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="prototype-flag">Source of truth: Jake Sobieski 2026 Resume · structure &amp; facts locked, wording only</p>
+</div>
+
+<script>
+const NAME_BASE = "Jake Sobieski";
+const CONTACT = "(972) 567-2848 • jake6sobi@gmail.com";
+const CERT_FULL = "Series 3, 7, and 63, Chartered Financial Analyst (CFA)";
+const CERT_BASE = "Series 3, 7, and 63";
+function getCfaMode(){ const el = document.getElementById('cfaMode'); return el ? el.value : 'header'; }
+
+const BASE_TEXT = {
+  c1: "Evaluate opportunities across distressed and stressed private and public companies for direct investments (acquisition financings, LBO financings, DIP and exit financings, etc.), and opportunistic secondary market purchases",
+  c2: "Perform fulsome due diligence and underwriting analyses for 100+ direct and primary syndication transactions; assisted in reviewing company financials and credit agreements, drafting term sheets, negotiating covenants, preparing three statement, DCF, and LBO models, and presenting investment memos to investment committee and senior management prior to transaction execution",
+  c3: "Produced proprietary operating and debt service model implementing multiple KPI drivers including day rate, utilization rate, asset depreciation, newbuild costs, regulatory approval and other operating assumptions to arrive at a base case and various downside scenarios",
+  c4: "Evaluated model outputs under stress cases to arrive at a value range for the Company’s pro forma operations and to-be built vessels to size and align the initial advance, delayed draw, and projected drawdown timeline with investment committee approved loan-to-value advance rate",
+  c5: "Reviewed the company’s licensing contract backlog and listened to company’s management presentation to identify potential changes in operational strategy for a mid-cap public company; worked with Associate to develop 5 scenario operating model incorporating information gathered from publicly available data and expert networking calls",
+  s1: "Consulted clients on portfolio and option metrics to gain insights into their risk profile and anticipate market impacts on their portfolios",
+  s2: "Conducted thorough analyses of portfolio hedges, utilizing beta testing for index exposure, delta hedging for sector and single-stock exposure, and delta and notional value strategies for futures markets",
+  s3: "Educated clients on advanced option pricing concepts, including dynamic delta, delta decay, and volatility breadth, empowering them with valuable knowledge",
+  s4: "Provided expert guidance on trade construction, risk management, and comprehensive portfolio analysis across stocks, indices, options, futures, and forex markets, while accounting for earnings, economic factors, and tail-risk events",
+  s5: "Maintained a daily compilation of current events and market news, fostering an informed team environment on capital markets, global economics, and legislative policy",
+  h1: "Played an integral role in debt capital market transactions, assisting in financial modeling, presentation development, and pitch material creation to support client engagements and deal execution",
+  h2: "Conducted in-depth market research and analysis, offering valuable insights into debt securities origination and structuring, while staying abreast of market trends and investor preferences",
+  h3: "Collaborated closely with cross-functional teams to streamline due diligence processes, facilitate document preparation, and enhance client communications, showcasing strong teamwork and organizational abilities in a high-paced internship environment",
+  skills: "Microsoft Office Suite (Excel, PowerPoint, Word), Bloomberg, Capital IQ, Octus, Research, Financial Modeling (Three Statement, DCF, LBO), Financial Statement Analysis, Market and Industry Research, Presenting, Writing, AI Applications"
+};
+
+const STRUCT = {
+  experience: [
+    { co:"CSG Investments", loc:"Plano, TX", ttl:"Analyst, Distressed & Special Situations", dates:"February 2024 – Present",
+      bullets:["c1","c2"],
+      subs:[ { label:"Selected Transaction Experience:", deals:[
+        { header:"$450M loan origination to an offshore services company for acquisition financing", bullets:["c3","c4"] },
+        { header:"$210M loan origination to a distressed entertainment and leisure company for refinancing", bullets:["c5"] }
+      ]}]
+    },
+    { co:"Charles Schwab", loc:"Westlake, TX", ttl:"Derivatives Trading Analyst", dates:"August 2020 – February 2024",
+      bullets:["s1","s2","s3","s4","s5"], subs:[] },
+    { co:"Hilltop Securities", loc:"Dallas, TX", ttl:"Investment Banking Summer Analyst", dates:"June 2020 – August 2020",
+      bullets:["h1","h2","h3"], subs:[] }
+  ],
+  education: { school:"University of North Texas, G. Brint Ryan College of Business", loc:"Denton, TX",
+    degree:"Bachelor of Business Administration, Finance", dates:"May 2020",
+    bullets:["Cumulative GPA: 3.81/4.00","Theta Chi Fraternity, UNT Club Hockey, Student Investment Group"] },
+  additional: {
+    certifications: "Series 3, 7, and 63, Chartered Financial Analyst (CFA)",
+    interests: "Football, Golf, Men’s League Hockey, Dallas and Philadelphia Sports, Options Trading, Skiing, Gym"
+  }
+};
+
+let TXT = Object.assign({}, BASE_TEXT);
+
+const stageEls = () => Array.from(document.querySelectorAll('#stages li'));
+let animTimer = null;
+function runProgress() {
+  const lis = stageEls(); lis.forEach(li => li.classList.remove('active','done'));
+  let i = 0; const fill = document.getElementById('barFill');
+  const setStage = (n) => { lis.forEach((li, idx) => { li.classList.toggle('done', idx < n); li.classList.toggle('active', idx === n); });
+    fill.style.width = Math.min(96, Math.round((n/(lis.length))*100)) + '%'; };
+  setStage(0);
+  animTimer = setInterval(() => { i++; if (i >= lis.length) i = lis.length - 1; setStage(i); }, 1100);
+}
+function finishProgress() { if (animTimer) clearInterval(animTimer);
+  stageEls().forEach(li => { li.classList.remove('active'); li.classList.add('done'); });
+  document.getElementById('barFill').style.width = '100%'; }
+
+function escapeHtml(s){ return (s||"").replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function highlight(text, keywords) {
+  let out = escapeHtml(text);
+  (keywords||[]).forEach(kw => { if (!kw || kw.length < 3) return;
+    const safe = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    try { out = out.replace(new RegExp('(?<![\\w])('+safe+')(?![\\w])','ig'), '<mark>$1</mark>'); }
+    catch(e){ try { out = out.replace(new RegExp('('+safe+')','ig'), '<mark>$1</mark>'); } catch(e2){} }
+  });
+  return out;
+}
+
+function buildResumeHtml(useHighlight, kw) {
+  const H = (id) => useHighlight ? highlight(TXT[id], kw) : escapeHtml(TXT[id]);
+  const cfaMode = getCfaMode();
+  const displayName = NAME_BASE + (cfaMode === 'header' ? ', CFA' : '');
+  let h = '';
+  h += '<p class="rname">'+escapeHtml(displayName)+'</p>';
+  h += '<p class="rcontact">'+escapeHtml(CONTACT)+'</p>';
+  h += '<div class="rsec">EXPERIENCE</div>';
+  STRUCT.experience.forEach(e => {
+    h += '<div class="row"><span class="co">'+escapeHtml(e.co)+'</span><span class="loc">'+escapeHtml(e.loc)+'</span></div>';
+    h += '<div class="row"><span class="ttl">'+escapeHtml(e.ttl)+'</span><span class="dates">'+escapeHtml(e.dates)+'</span></div>';
+    if (e.bullets.length){ h += '<ul>'; e.bullets.forEach(id => h += '<li>'+H(id)+'</li>'); h += '</ul>'; }
+    (e.subs||[]).forEach(sub => {
+      h += '<div class="stxlabel">'+escapeHtml(sub.label)+'</div>';
+      sub.deals.forEach(d => { h += '<div class="deal">'+escapeHtml(d.header)+'</div>';
+        h += '<ul>'; d.bullets.forEach(id => h += '<li>'+H(id)+'</li>'); h += '</ul>'; });
+    });
+  });
+  const ed = STRUCT.education;
+  h += '<div class="rsec">EDUCATION</div>';
+  h += '<div class="row"><span class="co">'+escapeHtml(ed.school)+'</span><span class="loc">'+escapeHtml(ed.loc)+'</span></div>';
+  h += '<div class="row"><span class="ttl">'+escapeHtml(ed.degree)+'</span><span class="dates">'+escapeHtml(ed.dates)+'</span></div>';
+  h += '<ul>'; ed.bullets.forEach(b => h += '<li>'+escapeHtml(b)+'</li>'); h += '</ul>';
+  h += '<div class="rsec">ADDITIONAL INFORMATION</div>';
+  h += '<div class="addline"><b>Certifications</b>: '+escapeHtml(cfaMode === 'off' ? CERT_BASE : CERT_FULL)+'</div>';
+  h += '<div class="addline"><b>Skills</b>: '+H('skills')+'</div>';
+  h += '<div class="addline"><b>Interests &amp; Hobbies</b>: '+escapeHtml(STRUCT.additional.interests)+'</div>';
+  return h;
+}
+function renderResume(kw) { document.getElementById('resumeRender').innerHTML = buildResumeHtml(true, kw); }
+function renderFit(fit) {
+  const ul = document.getElementById('fitList'); ul.innerHTML = '';
+  (fit && fit.length ? fit : []).forEach(f => { const li = document.createElement('li');
+    li.innerHTML = '<b>'+escapeHtml(f.skill)+'.</b> '+escapeHtml(f.why); ul.appendChild(li); });
+  if (!ul.children.length) ul.innerHTML = '<li>Strong fit across distressed/special-situations underwriting, financial modeling, and risk — see the tailored resume.</li>';
+}
+
+function localFallback(jobText) {
+  const lower = (jobText||'').toLowerCase();
+  const pool = ["financial modeling","DCF","LBO","three statement","valuation","credit","underwriting","distressed","special situations","due diligence","risk management","portfolio","derivatives","capital markets","Bloomberg","Capital IQ","Excel","CFA","term sheets","covenants"];
+  return { rewrites: [], skills: BASE_TEXT.skills,
+    keywords_added: pool.filter(k => lower.includes(k.toLowerCase())),
+    fit: [
+      {skill:"Distressed & special-situations underwriting", why:"He underwrites distressed/stressed credit and equity deals daily at CSG Investments."},
+      {skill:"Financial modeling (3-statement, DCF, LBO)", why:"Built proprietary operating and debt-service models across 100+ transactions."},
+      {skill:"Due diligence & credit analysis", why:"Reviews financials and credit agreements, drafts term sheets, and negotiates covenants."},
+      {skill:"CFA charterholder", why:"Signals rigorous, standardized investment and ethics training."}
+    ]
+  };
+}
+
+let lastKw = [];
+async function tailor() {
+  const jobText = document.getElementById('jobText').value.trim();
+  if (jobText.length < 40) { alert("Please paste the full job description (a few sentences at least)."); return; }
+  document.getElementById('inputCard').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('progress').style.display = 'block';
+  runProgress();
+
+  const minTime = new Promise(r => setTimeout(r, 6500));
+  const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+  let result = null, errored = false;
+
+  const work = (async () => {
+    try {
+      const editable = Object.keys(BASE_TEXT).map(id => ({ id, text: BASE_TEXT[id] }));
+      const resp = await withTimeout(
+        fetch('/api/tailor', { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ jobText, editable }) }).then(r => r.json()),
+        45000);
+      if (!resp || resp.error) throw new Error(resp && resp.error ? resp.error : 'no response');
+      result = resp;
+    } catch (e) { console.warn("tailor api failed -> fallback", e); result = localFallback(jobText); errored = true; }
+  })();
+
+  await Promise.all([minTime, work]);
+  finishProgress();
+  await new Promise(r => setTimeout(r, 450));
+
+  TXT = Object.assign({}, BASE_TEXT);
+  (result.rewrites || []).forEach(rw => { if (rw && rw.id && (rw.id in BASE_TEXT) && rw.text) TXT[rw.id] = String(rw.text); });
+  if (result.skills) TXT.skills = String(result.skills);
+  lastKw = result.keywords_added || [];
+
+  renderResume(lastKw);
+  renderFit(result.fit);
+
+  document.getElementById('progress').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  if (errored) document.querySelector('#results .toolbar')
+    .insertAdjacentHTML('afterend','<div class="err">The AI tailoring service wasn\'t reachable, so keywords were matched locally and bullets kept as-is. Check that the app\'s API key is set, then try again.</div>');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resumeAsHtmlDoc() {
+  const inner = buildResumeHtml(false, []);
+  return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8">'
+    + '<style>@page{margin:0.3in 0.4in 0.4in 0.4in;} body{font-family:"Times New Roman",Times,serif;color:#000;font-size:10.5pt;line-height:1.18;}'
+    + '.rname{text-align:center;font-weight:700;font-size:16pt;margin:0;}'
+    + '.rcontact{text-align:center;font-size:10.5pt;padding-bottom:3px;border-bottom:3px double #000;margin:0 0 6px;}'
+    + '.rsec{font-weight:700;font-size:10.5pt;border-bottom:1px solid #000;margin:8px 0 3px;}'
+    + '.row{width:100%;} .row .loc,.row .dates{float:right;} .co{font-weight:700;} .loc{font-weight:700;} .ttl{font-style:italic;} .dates{font-style:italic;}'
+    + 'ul{margin:2px 0 4px;padding-left:20px;} li{font-size:10.5pt;margin-bottom:2px;text-align:justify;}'
+    + '.stxlabel{text-decoration:underline;margin:3px 0 1px;} .deal{font-weight:700;font-style:italic;margin:2px 0 1px;} .addline{margin:2px 0;}'
+    + '</style></head><body>'+inner+'</body></html>';
+}
+function download(filename, content, type) {
+  const blob = new Blob([content], {type}); const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename;
+  document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+document.getElementById('goBtn').addEventListener('click', tailor);
+document.getElementById('dlWord').addEventListener('click', () =>
+  download('Jake_Sobieski_Resume_Tailored.doc', resumeAsHtmlDoc(), 'application/msword'));
+document.getElementById('dlPdf').addEventListener('click', () => {
+  const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print/save as PDF.'); return; }
+  w.document.write(resumeAsHtmlDoc()); w.document.close(); setTimeout(()=>{ w.focus(); w.print(); }, 400);
+});
+document.getElementById('restart').addEventListener('click', () => {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('inputCard').style.display = 'block';
+  document.getElementById('jobText').value = ''; document.getElementById('jobUrl').value = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+// Smart hint: nudge toward "Certifications only" when the posting looks like PE / buy-side
+document.getElementById('jobText').addEventListener('input', function(){
+  const t = this.value.toLowerCase();
+  const pe = /private equity|buyout|buy-side|buy side|portfolio company|leveraged buyout|\bpe\b|\blbo\b fund/.test(t);
+  document.getElementById('peHint').style.display = pe ? 'block' : 'none';
+});
+// Re-render live if the CFA choice changes after a resume is already showing
+document.getElementById('cfaMode').addEventListener('change', function(){
+  if (document.getElementById('results').style.display === 'block') renderResume(lastKw);
+  else renderResume([]);
+});
+
+renderResume([]);
+</script>
+</body>
+</html>

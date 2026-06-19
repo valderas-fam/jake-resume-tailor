@@ -1,0 +1,9 @@
+{
+  "name": "jake-resume-tailor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Single-user resume tailoring web app for Jake Sobieski. Pastes a job posting and rewords his real resume to match it.",
+  "engines": {
+    "node": ">=18"
+  }
+}
