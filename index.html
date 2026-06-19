@@ -28,6 +28,7 @@
   .cfa-hint { display:none; margin-top:8px; border-radius:9px; padding:9px 12px; font-size:12.5px; }
   .cfa-hint.warn { background:#fff8e6; border:1px solid #f0e0a8; color:#6b5a1f; }
   .cfa-hint.good { background:#ecf7f0; border:1px solid #bfe3cf; color:#1f6b44; }
+  .cfa-hint.info { background:#eef3f9; border:1px solid #cfddf0; color:#274b73; }
   .btn { margin-top: 18px; background: #16385f; color: #fff; border: none; border-radius: 9px;
     padding: 12px 22px; font-size: 14.5px; font-weight: 600; cursor: pointer; transition: background .15s; }
   .btn:hover { background: #1d4878; }
@@ -358,13 +359,14 @@ function recommendCfa(raw){
   const mentionsCFA = /\bcfa\b|chartered financial analyst/.test(t);
   const looksPE = /private equity associate|buyout|leveraged buyout|portfolio compan|buy-side associate|megafund|mega-fund/.test(t);
   if (mentionsCFA) return {tone:'good', html:'<b>Recommended: keep the CFA in the header.</b> This posting lists the CFA as preferred or required, so &ldquo;Header + Certifications&rdquo; gives the strongest signal to both the ATS scan and the reviewer.'};
-  if (looksPE) return {tone:'warn', html:'This reads like a buy-side / PE associate role that doesn&rsquo;t mention the CFA. You may prefer <b>&ldquo;Certifications only&rdquo;</b> so the charter doesn&rsquo;t come across as overqualified &mdash; your call.'};
-  return null;
+  if (looksPE) return {tone:'warn', html:'<b>Consider &ldquo;Certifications only.&rdquo;</b> This reads like a buy-side / PE associate role that doesn&rsquo;t mention the CFA, where the charter can occasionally read as overqualified. Keeping it in the header is still defensible &mdash; your call.'};
+  return {tone:'info', html:'<b>Recommended: keep the CFA in the header.</b> No CFA requirement is mentioned, but the charter is a respected credential for most analyst and credit roles and rarely hurts. Switch to &ldquo;Certifications only&rdquo; only if you specifically want to look less senior for this role.'};
 }
 function updateCfaRec(){
-  const rec = recommendCfa(document.getElementById('jobText').value);
+  const txt = document.getElementById('jobText').value;
   const el = document.getElementById('peHint');
-  if (!rec){ el.style.display='none'; return; }
+  if (txt.trim().length < 30){ el.style.display='none'; return; }
+  const rec = recommendCfa(txt);
   el.className = 'cfa-hint ' + rec.tone; el.innerHTML = rec.html; el.style.display = 'block';
 }
 document.getElementById('jobText').addEventListener('input', updateCfaRec);
